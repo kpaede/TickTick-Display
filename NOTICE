@@ -1,0 +1,9 @@
+Third-party source attribution
+
+firmware/ST7305_U8g2.h and firmware/ST7305_U8g2.cpp are adapted from the
+Waveshare ESP32-S3-RLCD-4.2 Arduino U8g2 example:
+https://github.com/waveshareteam/ESP32-S3-RLCD-4.2/tree/main/02_Example/Arduino/10_U8G2_Test
+
+The vendor license is included in firmware/LICENSE.vendor.
+The local adaptation is a standalone driver used by the project's USB firmware.
+The original source files were adjusted for this integration.

@@ -1,0 +1,17 @@
+.venv/
+.tools/
+data/
+build/
+__pycache__/
+*.pyc
+.DS_Store
+dist/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+ticktick-oauth*.json
+.installed
