@@ -135,10 +135,13 @@ The installer builds the calendar helper locally and creates:
 | --- | --- |
 | `~/Applications/TickTick Display.app` | App you can double-click to start or restart the service |
 | `~/Library/Application Support/TickTick Display/` | Independent program files, Python environment, settings and OAuth credentials |
+| `~/Library/Application Support/TickTick Display/Calendar Reader.app` | Independently signed EventKit helper |
 | `~/Library/LaunchAgents/local.ticktick-display.plist` | Automatic startup when you log in |
 
 Double-click **TickTick Display** in `~/Applications`. To find that folder in
 Finder, press **⌘⇧G** and enter `~/Applications`.
+Opening the app shows a confirmation window. Closing that window with **OK**
+leaves the background service running; you do not need to keep an app window open.
 
 At the first start, macOS asks for calendar access for **TickTick Display Kalender**.
 Approve **Full Access**. EventKit requires that permission to read events; our
@@ -148,6 +151,10 @@ change it under **System Settings → Privacy & Security → Calendars**.
 The installed service automatically discovers the connected ESP32 and resumes
 after USB reconnection. After installation, it no longer depends on your clone
 or Downloads folder. Existing installed credentials are preserved by updates.
+If the calendar helper source has not changed, updates reuse its existing signed
+binary. The helper is installed outside the launcher bundle so changing the
+launcher does not change the helper's enclosing app identity. Migrating from the
+original bundled helper may require calendar access to be approved once again.
 If you later need to authorize TickTick again, use the `anzeigen` script in the
 installed program folder, or a fresh source checkout with the dependencies set up.
 
@@ -235,7 +242,7 @@ Shortcuts source and app-opening buttons also require macOS.
 .venv/bin/python -m unittest -v test_agenda test_display test_calendar test_buttons
 ```
 
-The 37 tests cover overdue tasks, habit recurrence and progress, local-day
+The tests cover overdue tasks, habit recurrence and progress, local-day
 boundaries, calendar recurrence, daylight-saving transitions, Markdown rendering,
 bitmap packing, queued USB buttons, OAuth storage/locking and the read-only tool
 allowlist. Button tests compile the actual firmware button logic with `clang++`

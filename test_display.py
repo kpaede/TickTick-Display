@@ -97,6 +97,29 @@ class DisplayTests(unittest.TestCase):
             submit.assert_called_once_with(open_event_app, b"BUTTON CALENDAR")
             device.reset_input_buffer.assert_not_called()
 
+    def test_upload_recovers_from_partial_command_after_board_reset(self):
+        device = MagicMock()
+        device.read_until.side_effect = [b"ERROR command\n", b"BUTTON TODAY\n", b"AGENDA3\n",
+                                        b"READY\n", b"READY\n", b"STORED 1 0\n", b"OK 1 1\n"]
+        device.write.side_effect = len
+        with patch("anzeigen.port_lock"), patch("anzeigen.serial.Serial") as serial_port, \
+             patch("button_bridge.APP_OPENER.submit") as submit:
+            serial_port.return_value.__enter__.return_value = device
+            self.assertEqual(send_frames([bytes(PAGE_BYTES)], "test"), b"OK 1 1")
+            self.assertEqual(device.write.call_args_list[0].args[0], b"\nHELLO\n")
+            submit.assert_called_once_with(open_event_app, b"BUTTON TODAY")
+
+    def test_protocol_sync_does_not_ignore_a_later_checksum_error(self):
+        device = MagicMock()
+        device.read_until.side_effect = [b"ERROR command\n", b"AGENDA3\n", b"READY\n",
+                                        b"READY\n", b"ERROR checksum\n"]
+        device.write.side_effect = len
+        with patch("anzeigen.port_lock"), patch("anzeigen.serial.Serial") as serial_port:
+            serial_port.return_value.__enter__.return_value = device
+            with self.assertRaisesRegex(RuntimeError, "ERROR checksum"):
+                send_frames([bytes(PAGE_BYTES)], "test")
+            self.assertFalse(any(call.args[0] == b"COMMIT\n" for call in device.write.call_args_list))
+
 
 class RefreshTests(unittest.TestCase):
     def test_explicit_refresh_works_when_periodic_timer_is_disabled(self):

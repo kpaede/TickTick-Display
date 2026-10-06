@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Show a visible confirmation window when opening the Mac app.
+- Reuse an unchanged, validly signed calendar helper during app updates to preserve calendar access.
+- Install the calendar helper separately from the launcher; migration requires one calendar authorization.
+- Resynchronize the USB protocol after a partial command or board reset, without discarding button events.
+
 ## 0.0.1
 
 Initial source release for the ESP32-S3-RLCD-4.2-EN and macOS.

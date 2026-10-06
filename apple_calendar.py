@@ -8,6 +8,7 @@ from pathlib import Path
 
 from agenda_format import TIMEZONE
 from display_render import Row, Span, Style, render_rows, wrap_spans
+from runtime_paths import INSTALLED_RUNTIME
 
 HELPER_NAME = "Calendar Reader.app"
 
@@ -19,10 +20,13 @@ class CalendarPermissionRequired(RuntimeError):
 
 
 def helper_app():
+    standalone = INSTALLED_RUNTIME / HELPER_NAME
+    if standalone.is_dir():
+        return standalone
     installed = Path.home() / "Applications" / "TickTick Display.app" / "Contents" / "Helpers" / HELPER_NAME
     if installed.is_dir():
         return installed
-    return Path(__file__).parent / "build" / "TickTick Display.app" / "Contents" / "Helpers" / HELPER_NAME
+    return Path(__file__).parent / "build" / HELPER_NAME
 
 
 def today_events():

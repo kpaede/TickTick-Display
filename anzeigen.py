@@ -65,11 +65,13 @@ def find_port() -> str:
     return ports[0].replace("/dev/tty.", "/dev/cu.")
 
 
-def wait_for(device, expected: bytes, timeout: float = 10) -> bytes:
+def wait_for(device, expected: bytes, timeout: float = 10, ignored_errors=()) -> bytes:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         line = device.read_until(b"\n", size=128).strip()
         if handle_event(line):
+            continue
+        if line in ignored_errors:
             continue
         if line == expected or line.startswith(expected + b" "):
             return line
@@ -93,10 +95,10 @@ def send_frames(frames, port, left_frames=None):
     ):
         raise RuntimeError("Ungültige Displayseiten.")
     with port_lock(port), serial.Serial(port, 115200, timeout=0.25, write_timeout=10, exclusive=False) as device:
-        # Read through old acknowledgments until HELLO is answered. Clearing
-        # the input buffer here would also discard queued button events.
-        device.write(b"HELLO\n")
-        wait_for(device, b"AGENDA3")
+        # End any partial command left by a disconnect/reset before HELLO.
+        # Read queued button events rather than clearing the input buffer.
+        device.write(b"\nHELLO\n")
+        wait_for(device, b"AGENDA3", ignored_errors=(b"ERROR command", b"ERROR timeout"))
         device.write(f"BEGIN {len(panes[0])} {len(panes[1])}\n".encode("ascii"))
         wait_for(device, b"READY")
         for pane_index, pane in enumerate(panes):
